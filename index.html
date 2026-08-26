@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#091b2b" />
+    <meta name="description" content="YanQing AI 办公助手：把一句工作需求变成清晰的执行路线、工具推荐与专属 Prompt。" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>YanQing AI 办公助手</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23d9ff71'/%3E%3Cpath d='M32 11l4.8 15.2L52 31l-15.2 4.8L32 51l-4.8-15.2L12 31l15.2-4.8L32 11z' fill='%23091b2b'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar" aria-label="主导航">
+        <button class="brand-lockup" id="brand-home" aria-label="返回智能任务台">
+          <span class="brand-symbol" aria-hidden="true">✦</span>
+          <span><b>YanQing.AI</b><small>让想法进入执行</small></span>
+        </button>
+
+        <nav class="nav-list" aria-label="功能导航">
+          <button class="nav-button active" data-view="workspace"><span>⌁</span>智能任务台</button>
+          <button class="nav-button" data-view="tools"><span>◎</span>工具雷达</button>
+          <button class="nav-button" data-view="prompts"><span>▣</span>Prompt 工作台</button>
+          <button class="nav-button" data-view="history"><span>◷</span>最近任务<em id="history-count">3</em></button>
+        </nav>
+
+        <div class="sidebar-signal">
+          <div class="signal-head"><i></i><span>今日工作流</span></div>
+          <strong id="signal-title">等待第一个任务</strong>
+          <div class="signal-track"><i id="signal-progress"></i></div>
+          <p id="signal-copy">从一句自然语言开始即可</p>
+        </div>
+
+        <div class="profile-card">
+          <span>YQ</span>
+          <div><strong>YanQing</strong><small>材料 × AI 实践者</small></div>
+          <b aria-hidden="true">ϟ</b>
+        </div>
+      </aside>
+
+      <button class="sidebar-backdrop" id="sidebar-backdrop" aria-label="关闭导航"></button>
+
+      <div class="site-canvas">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="menu-button" id="menu-button" aria-label="打开导航">☰</button>
+            <span class="route-name">工作台 / <b id="route-name">智能任务台</b></span>
+          </div>
+          <div class="secure-pill"><span>✓</span>内容仅在本机处理</div>
+        </header>
+
+        <section class="view-panel active" id="view-workspace" data-panel="workspace">
+          <main class="workspace-view">
+            <section class="workspace-intro">
+              <div>
+                <p class="kicker"><span></span> YANQING INTELLIGENCE DESK</p>
+                <h1>你好，YanQing。<br /><em>今天推进哪件事？</em></h1>
+                <p>告诉我目标，我会把它变成一条清晰、可执行的 AI 工作路线。</p>
+              </div>
+              <div class="status-stamp" aria-label="助手已就绪">
+                <span>ASSISTANT</span><b>READY</b><small>智能路由在线</small>
+              </div>
+            </section>
+
+            <section class="composer-grid">
+              <div class="task-composer-card">
+                <div class="composer-label">
+                  <span class="step-badge">01</span>
+                  <div><strong>描述你的任务</strong><small>像给一位靠谱同事布置工作一样说</small></div>
+                  <span class="privacy-note">✓ 本机分析</span>
+                </div>
+                <textarea id="task-input" class="task-input" rows="7" placeholder="例如：分析这批聚乙烯纤维实验数据，找出转速、冷却方式和牵伸温度对强度的影响……" aria-label="描述你的工作任务"></textarea>
+                <div class="composer-actions">
+                  <div class="category-chips" id="category-chips" aria-label="任务类型"></div>
+                  <button class="run-button" id="run-button">
+                    <span aria-hidden="true">✦</span><b>生成执行方案</b><i aria-hidden="true">→</i>
+                  </button>
+                </div>
+                <p class="shortcut-hint">⌘ / Ctrl + Enter 快速生成</p>
+              </div>
+
+              <aside class="route-preview">
+                <div class="radar-orbit" aria-hidden="true"><span>AI</span><i></i><b></b></div>
+                <p class="kicker">TASK ROUTER</p>
+                <h2 id="route-preview-title">从需求到结果，只走必要步骤</h2>
+                <ol>
+                  <li id="route-step-1"><span>1</span><div><b>理解任务</b><small>识别目标与交付物</small></div></li>
+                  <li id="route-step-2"><span>2</span><div><b>匹配工具</b><small>选择更合适的 AI</small></div></li>
+                  <li id="route-step-3"><span>3</span><div><b>生成 Prompt</b><small>复制即可开始执行</small></div></li>
+                </ol>
+              </aside>
+            </section>
+
+            <section class="scene-section">
+              <div class="section-heading">
+                <div><p class="kicker">QUICK START</p><h2>从你最常做的事开始</h2></div>
+                <span>选择后仍可继续修改需求</span>
+              </div>
+              <div class="scene-grid" id="scene-grid"></div>
+            </section>
+
+            <section class="result-section" id="assistant-result" hidden>
+              <div class="result-heading">
+                <div>
+                  <p class="kicker success-kicker">✓ ANALYSIS COMPLETE</p>
+                  <h2 id="analysis-title"></h2>
+                  <p>已经把你的原始需求整理为下面这条执行路线。</p>
+                </div>
+                <div class="clarity-score"><span>需求清晰度</span><b id="clarity-score">88</b><small>/ 100</small></div>
+              </div>
+
+              <div class="brief-strip">
+                <div><span>任务目标</span><b id="analysis-goal"></b></div>
+                <div><span>最终交付</span><b id="analysis-deliverable"></b></div>
+                <div><span>主要受众</span><b id="analysis-audience"></b></div>
+              </div>
+
+              <div class="result-grid">
+                <article class="execution-card panel-card">
+                  <div class="card-title"><span class="step-badge">02</span><div><h3>执行路线</h3><p>按顺序完成，减少返工</p></div></div>
+                  <div class="execution-steps" id="execution-steps"></div>
+                  <div class="human-check"><span>✓</span><div><b>人工校验点</b><p id="analysis-note"></p></div></div>
+                </article>
+
+                <article class="tool-card-panel panel-card">
+                  <div class="card-title"><span class="step-badge">03</span><div><h3>选择执行工具</h3><p>首选已排在最前</p></div></div>
+                  <div class="tool-options" id="tool-options"></div>
+                </article>
+
+                <article class="prompt-card panel-card">
+                  <div class="prompt-head">
+                    <div class="card-title"><span class="step-badge">04</span><div><h3>专属 Prompt</h3><p id="prompt-tool-label">已完成结构优化</p></div></div>
+                    <span class="ready-badge">● 已就绪</span>
+                  </div>
+                  <textarea id="prompt-output" class="prompt-output" aria-label="生成的专属 Prompt"></textarea>
+                  <div class="prompt-actions">
+                    <button class="outline-button" id="optimize-button">↻ 再优化一次</button>
+                    <button class="copy-button" id="copy-button">▣ 复制 Prompt</button>
+                    <a class="launch-button" id="launch-button" href="#" target="_blank" rel="noreferrer">前往执行 <span>↗</span></a>
+                  </div>
+                </article>
+              </div>
+            </section>
+          </main>
+        </section>
+
+        <section class="view-panel" id="view-tools" data-panel="tools">
+          <main class="simple-view">
+            <div class="simple-head"><p class="kicker">TOOL RADAR</p><h1>不是工具越多越好，<br /><em>而是每次都选对。</em></h1><p>按真实任务匹配工具，避免在不同平台之间来回试错。</p></div>
+            <div class="tool-atlas" id="tool-atlas"></div>
+          </main>
+        </section>
+
+        <section class="view-panel" id="view-prompts" data-panel="prompts">
+          <main class="simple-view">
+            <div class="simple-head"><p class="kicker">PROMPT WORKBENCH</p><h1>把好方法沉淀下来，<br /><em>下次直接复用。</em></h1><p>这些模板保留了任务结构，选择后只需要替换你的具体内容。</p></div>
+            <div class="template-list" id="template-list"></div>
+          </main>
+        </section>
+
+        <section class="view-panel" id="view-history" data-panel="history">
+          <main class="simple-view">
+            <div class="simple-head"><p class="kicker">RECENT TASKS</p><h1>做过的任务，<br /><em>都能继续推进。</em></h1><p>选择一项历史任务，回到任务台重新分析或修改。</p></div>
+            <div class="history-table" id="history-table"></div>
+          </main>
+        </section>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
