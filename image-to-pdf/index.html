@@ -44,14 +44,14 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:35px}
 <div class="field"><label>页面尺寸</label><select id="pageSize"><option value="a4p">A4 纵向</option><option value="a4l">A4 横向</option><option value="original">跟随每张图片</option></select></div>
 <div class="field"><label>页边距 <span id="marginOut">10 mm</span></label><input id="margin" type="range" min="0" max="30" value="10"></div>
 <div class="field"><label>图片质量 <span id="qualityOut">高质量</span></label><input id="quality" type="range" min="55" max="95" value="85"></div>
-<label class="check"><input id="cropBlack" type="checkbox" checked><span><b>自动裁掉黑边</b><small>识别图片四周连续黑色区域，只保留有效内容</small></span></label><label class="check"><input id="smartClean" type="checkbox" checked><span><b>智能清理</b><small>自动跳过纯黑页与高度重复的图片</small></span></label><button class="convert" id="convert" disabled>生成并下载 PDF</button>
+<label class="check"><input id="cropBlack" type="checkbox" checked><span><b>自动裁掉黑边</b><small>识别截图上下黑屏和四周黑边，只保留PPT/文档内容</small></span></label><label class="check"><input id="smartClean" type="checkbox" checked><span><b>智能清理</b><small>自动跳过纯黑页与高度重复的图片</small></span></label><button class="convert" id="convert" disabled>生成并下载 PDF</button>
 <div class="progress" id="progress"><i id="bar"></i></div>
 <p class="mini">处理大批量高清图片时，请保持页面打开。生成的 PDF 会自动下载到设备。</p>
 </aside>
 </main>
 <section class="features">
 <article class="panel feature"><i>🔒</i><h3>真正的本地处理</h3><p>文件不会发送到服务器，适合证件、合同、实验记录等敏感图片。</p></article>
-<article class="panel feature"><i>✂️</i><h3>自动裁黑边</h3><p>智能识别图片四周连续的黑色区域，自动裁剪后再生成 PDF。</p></article>
+<article class="panel feature"><i>✂️</i><h3>自动裁黑边</h3><p>智能定位截图中的PPT或文档区域，裁掉上下黑屏及四周黑边。</p></article>
 <article class="panel feature"><i>⚡</i><h3>零安装即可使用</h3><p>不依赖后端和账号，打开网页就能用，生成完成后直接下载。</p></article>
 </section>
 <footer>YanQing Tools · 免费使用 · 不保存任何文件</footer>
@@ -88,12 +88,24 @@ function b64bytes(data){const b=atob(data.split(',')[1]),u=new Uint8Array(b.leng
 function detectBlackCrop(im){
  const maxSample=700,scale=Math.min(1,maxSample/Math.max(im.naturalWidth,im.naturalHeight)),sw=Math.max(1,Math.round(im.naturalWidth*scale)),sh=Math.max(1,Math.round(im.naturalHeight*scale));
  const c=document.createElement('canvas');c.width=sw;c.height=sh;const g=c.getContext('2d');g.drawImage(im,0,0,sw,sh);const d=g.getImageData(0,0,sw,sh).data;
- const dark=(x,y)=>{const i=(y*sw+x)*4;return .299*d[i]+.587*d[i+1]+.114*d[i+2]<42};
- const rowBlack=y=>{let n=0,step=Math.max(1,Math.floor(sw/300));for(let x=0;x<sw;x+=step)if(dark(x,y))n++;return n/Math.ceil(sw/step)>.82};
- const colBlack=x=>{let n=0,step=Math.max(1,Math.floor(sh/300));for(let y=0;y<sh;y+=step)if(dark(x,y))n++;return n/Math.ceil(sh/step)>.82};
- let top=0,bottom=sh-1,left=0,right=sw-1;while(top<sh*.45&&rowBlack(top))top++;while(bottom>sh*.55&&rowBlack(bottom))bottom--;while(left<sw*.45&&colBlack(left))left++;while(right>sw*.55&&colBlack(right))right--;
- if(right-left<sw*.18||bottom-top<sh*.18)return {sx:0,sy:0,sw:im.naturalWidth,sh:im.naturalHeight,cropped:false};
- const pad=2,sx=Math.max(0,Math.floor((left-pad)/scale)),sy=Math.max(0,Math.floor((top-pad)/scale)),ex=Math.min(im.naturalWidth,Math.ceil((right+pad+1)/scale)),ey=Math.min(im.naturalHeight,Math.ceil((bottom+pad+1)/scale));
+ const lum=(x,y)=>{const i=(y*sw+x)*4;return .299*d[i]+.587*d[i+1]+.114*d[i+2]};
+ const dark=(x,y)=>lum(x,y)<52,bright=(x,y)=>lum(x,y)>105;
+ const bestRun=flags=>{let bestA=0,bestB=-1,a=-1,gap=0;for(let k=0;k<=flags.length;k++){if(k<flags.length&&flags[k]){if(a<0)a=k;gap=0}else if(a>=0&&gap++>=2){const b=k-gap;if(b-a>bestB-bestA){bestA=a;bestB=b}a=-1;gap=0}}return [bestA,bestB]};
+ const rowBright=[];for(let y=0;y<sh;y++){let n=0,step=Math.max(1,Math.floor(sw/280)),total=0;for(let x=0;x<sw;x+=step){if(bright(x,y))n++;total++}rowBright[y]=n/total>.38}
+ let [panelTop,panelBottom]=bestRun(rowBright);
+ const outsideIsDark=()=>{let n=0,total=0,stepX=Math.max(1,Math.floor(sw/120)),stepY=Math.max(1,Math.floor(sh/240));for(let y=0;y<sh;y+=stepY){if(y>=panelTop&&y<=panelBottom)continue;for(let x=0;x<sw;x+=stepX){if(dark(x,y))n++;total++}}return total&&n/total>.62};
+ let top=0,bottom=sh-1,left=0,right=sw-1;
+ const strongPanel=panelBottom-panelTop>sh*.10&&panelBottom-panelTop<sh*.88&&(panelTop>sh*.06||panelBottom<sh*.94)&&outsideIsDark();
+ if(strongPanel){
+  top=panelTop;bottom=panelBottom;const colBright=[];for(let x=0;x<sw;x++){let n=0,total=0,step=Math.max(1,Math.floor((bottom-top+1)/180));for(let y=top;y<=bottom;y+=step){if(bright(x,y))n++;total++}colBright[x]=n/total>.25}
+  const run=bestRun(colBright);if(run[1]-run[0]>sw*.35){left=run[0];right=run[1]}
+ }else{
+  const rowBlack=y=>{let n=0,step=Math.max(1,Math.floor(sw/300));for(let x=0;x<sw;x+=step)if(dark(x,y))n++;return n/Math.ceil(sw/step)>.78};
+  const colBlack=x=>{let n=0,step=Math.max(1,Math.floor(sh/300));for(let y=0;y<sh;y+=step)if(dark(x,y))n++;return n/Math.ceil(sh/step)>.78};
+  while(top<sh*.45&&rowBlack(top))top++;while(bottom>sh*.55&&rowBlack(bottom))bottom--;while(left<sw*.45&&colBlack(left))left++;while(right>sw*.55&&colBlack(right))right--;
+ }
+ if(right-left<sw*.18||bottom-top<sh*.10)return {sx:0,sy:0,sw:im.naturalWidth,sh:im.naturalHeight,cropped:false};
+ const pad=Math.max(2,Math.round(Math.min(sw,sh)*.006)),sx=Math.max(0,Math.floor((left-pad)/scale)),sy=Math.max(0,Math.floor((top-pad)/scale)),ex=Math.min(im.naturalWidth,Math.ceil((right+pad+1)/scale)),ey=Math.min(im.naturalHeight,Math.ceil((bottom+pad+1)/scale));
  return {sx,sy,sw:ex-sx,sh:ey-sy,cropped:sx>2||sy>2||ex<im.naturalWidth-2||ey<im.naturalHeight-2}
 }
 async function prepare(x,q){
