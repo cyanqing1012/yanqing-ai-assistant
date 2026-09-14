@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f6f1">
+<title>图片转 PDF｜免费、本地处理</title>
+<meta name="description" content="免费在线图片转PDF：无需登录，支持排序、旋转、页面尺寸、边距和压缩，图片仅在浏览器本地处理。">
+<style>
+:root{--ink:#18221d;--muted:#66716b;--paper:#f7f6f1;--card:#fff;--line:#dcded8;--green:#176b4a;--green2:#dff3e8;--orange:#f3a83b;--shadow:0 18px 55px rgba(24,34,29,.10)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+button,select,input{font:inherit}.shell{max-width:1180px;margin:auto;padding:0 22px 64px}
+header{height:76px;display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:11px;font-weight:800}.mark{width:38px;height:38px;border-radius:12px;background:var(--ink);color:#bff2d2;display:grid;place-items:center;font-size:20px}.brand small{display:block;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.08em}.safe{font-size:13px;color:var(--green);background:var(--green2);padding:9px 13px;border-radius:999px}
+.hero{text-align:center;padding:58px 10px 40px}.eyebrow{font-weight:800;font-size:12px;letter-spacing:.15em;color:var(--green)}h1{font-size:clamp(38px,7vw,72px);line-height:1.02;margin:16px auto 18px;letter-spacing:-.055em;max-width:850px}.hero p{color:var(--muted);font-size:17px;margin:0 auto;max-width:650px;line-height:1.7}.hero b{color:var(--green)}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:start}.panel{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+.drop{min-height:300px;padding:38px;border:2px dashed #b9c4bd;border-radius:20px;margin:12px;display:grid;place-items:center;text-align:center;transition:.2s;background:linear-gradient(145deg,#fff,#fafbf8)}.drop.over{border-color:var(--green);background:var(--green2);transform:scale(.995)}.drop-icon{width:70px;height:70px;border-radius:22px;background:var(--green2);display:grid;place-items:center;margin:0 auto 20px;font-size:30px}.drop h2{margin:0 0 10px;font-size:24px}.drop p{margin:0 0 22px;color:var(--muted)}.pick{border:0;background:var(--ink);color:white;padding:14px 22px;border-radius:13px;font-weight:750;cursor:pointer}.pick:hover{background:var(--green)}#fileInput{display:none}
+.queue{padding:8px 12px 16px}.queue-head{display:flex;justify-content:space-between;align-items:center;padding:6px 6px 12px}.queue-head h2{font-size:18px;margin:0}.linkbtn{border:0;background:none;color:var(--green);font-weight:700;cursor:pointer}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.photo{position:relative;border:1px solid var(--line);border-radius:15px;padding:8px;background:#fff;cursor:grab}.photo.dragging{opacity:.45}.thumb{aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:#eff1ed;display:grid;place-items:center}.thumb img{max-width:100%;max-height:100%;object-fit:contain;transition:.2s}.photo-name{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:8px 2px 3px}.num{position:absolute;top:14px;left:14px;background:rgba(24,34,29,.82);color:white;font-size:11px;padding:4px 7px;border-radius:8px}.actions{position:absolute;right:14px;top:14px;display:flex;gap:5px}.iconbtn{width:29px;height:29px;border:0;border-radius:8px;background:rgba(255,255,255,.92);box-shadow:0 2px 8px #0002;cursor:pointer}.iconbtn:hover{background:var(--green2)}
+.settings{padding:22px;position:sticky;top:18px}.settings h2{font-size:19px;margin:0 0 5px}.settings>p{font-size:13px;color:var(--muted);margin:0 0 22px}.field{margin:0 0 17px}.field label{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:8px}.field label span{color:var(--green)}select,input[type=text]{width:100%;height:44px;border:1px solid var(--line);border-radius:11px;background:white;padding:0 12px;outline:none}input[type=range]{width:100%;accent-color:var(--green)}.convert{width:100%;border:0;background:var(--green);color:white;padding:15px;border-radius:13px;font-weight:800;cursor:pointer;margin-top:5px}.convert:disabled{background:#aeb7b1;cursor:not-allowed}.convert:not(:disabled):hover{filter:brightness(.92)}.mini{font-size:11px;color:var(--muted);text-align:center;line-height:1.5;margin:12px 4px 0}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}.feature{padding:22px}.feature i{font-style:normal;font-size:25px}.feature h3{font-size:16px;margin:12px 0 7px}.feature p{font-size:13px;color:var(--muted);line-height:1.6;margin:0}
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:white;padding:12px 18px;border-radius:12px;font-size:13px;transition:.25s;z-index:20}.toast.show{opacity:1;transform:translate(-50%,0)}
+.progress{height:4px;background:#e7ebe7;border-radius:8px;overflow:hidden;margin:13px 0 0;display:none}.progress i{display:block;width:0;height:100%;background:var(--orange);transition:.2s}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:35px}
+@media(max-width:820px){.hero{padding-top:36px}.workspace{grid-template-columns:1fr}.settings{position:static}.cards{grid-template-columns:repeat(2,1fr)}.features{grid-template-columns:1fr}.safe{font-size:0}.safe:after{content:"本地处理";font-size:12px}}
+@media(max-width:480px){.shell{padding:0 12px 40px}header{height:64px}.hero{padding:28px 5px 30px}.hero p{font-size:15px}.drop{padding:26px 14px;min-height:265px}.cards{grid-template-columns:1fr 1fr}.settings{padding:18px}.photo-name{display:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header><div class="brand"><span class="mark">↗</span><span>图片转 PDF<small>YANQING · PRIVATE TOOLS</small></span></div><div class="safe">✓ 图片不上传 · 仅本机处理</div></header>
+<section class="hero"><div class="eyebrow">FAST · PRIVATE · FREE</div><h1>把一组图片，变成一份<br><b>干净的 PDF</b></h1><p>上传、排序、旋转，然后导出。无需登录，支持手机和电脑，所有图片都在你的设备中完成处理。</p></section>
+<main class="workspace">
+<section class="panel">
+<div class="drop" id="drop">
+<div><div class="drop-icon">＋</div><h2>拖入图片，或从设备选择</h2><p>支持 JPG、PNG、WEBP 等常见格式，可一次选择多张</p><button class="pick" id="pick">选择图片</button><input id="fileInput" type="file" accept="image/*" multiple></div>
+</div>
+<div class="queue" id="queue" hidden>
+<div class="queue-head"><h2><span id="count">0</span> 张图片</h2><div><button class="linkbtn" id="add">＋ 继续添加</button><button class="linkbtn" id="clear">清空</button></div></div>
+<div class="cards" id="cards"></div>
+</div>
+</section>
+<aside class="panel settings">
+<h2>PDF 设置</h2><p>所有图片将按当前顺序生成页面</p>
+<div class="field"><label>文件名</label><input id="filename" type="text" value="图片合集" maxlength="80"></div>
+<div class="field"><label>页面尺寸</label><select id="pageSize"><option value="a4p">A4 纵向</option><option value="a4l">A4 横向</option><option value="original">跟随每张图片</option></select></div>
+<div class="field"><label>页边距 <span id="marginOut">10 mm</span></label><input id="margin" type="range" min="0" max="30" value="10"></div>
+<div class="field"><label>图片质量 <span id="qualityOut">高质量</span></label><input id="quality" type="range" min="55" max="95" value="85"></div>
+<button class="convert" id="convert" disabled>生成并下载 PDF</button>
+<div class="progress" id="progress"><i id="bar"></i></div>
+<p class="mini">处理大批量高清图片时，请保持页面打开。生成的 PDF 会自动下载到设备。</p>
+</aside>
+</main>
+<section class="features">
+<article class="panel feature"><i>🔒</i><h3>真正的本地处理</h3><p>文件不会发送到服务器，适合证件、合同、实验记录等敏感图片。</p></article>
+<article class="panel feature"><i>↕</i><h3>顺序随手调整</h3><p>电脑拖动卡片排序；手机使用卡片底部的左右按钮调整顺序。</p></article>
+<article class="panel feature"><i>⚡</i><h3>零安装即可使用</h3><p>不依赖后端和账号，打开网页就能用，生成完成后直接下载。</p></article>
+</section>
+<footer>YanQing Tools · 免费使用 · 不保存任何文件</footer>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s), files=[], enc=new TextEncoder();
+const drop=$('#drop'), input=$('#fileInput'), cards=$('#cards'), queue=$('#queue'), convert=$('#convert');
+$('#pick').onclick=$('#add').onclick=()=>input.click();
+input.onchange=e=>{addFiles([...e.target.files]);input.value=''};
+['dragenter','dragover'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',e=>addFiles([...e.dataTransfer.files]));
+$('#clear').onclick=()=>{files.forEach(x=>URL.revokeObjectURL(x.url));files.length=0;render()};
+$('#margin').oninput=e=>$('#marginOut').textContent=e.target.value+' mm';
+$('#quality').oninput=e=>$('#qualityOut').textContent=e.target.value>=88?'超清':e.target.value>=75?'高质量':'体积更小';
+function toast(t){const x=$('#toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1800)}
+function addFiles(list){const imgs=list.filter(f=>f.type.startsWith('image/'));if(!imgs.length)return toast('请选择图片文件');imgs.forEach(f=>files.push({file:f,url:URL.createObjectURL(f),rot:0,id:crypto.randomUUID?crypto.randomUUID():Math.random()+''}));render()}
+function render(){
+ queue.hidden=!files.length;drop.style.display=files.length?'none':'grid';convert.disabled=!files.length;$('#count').textContent=files.length;
+ cards.innerHTML='';
+ files.forEach((x,i)=>{const d=document.createElement('article');d.className='photo';d.draggable=true;d.dataset.id=x.id;
+ d.innerHTML='<div class="thumb"><img src="'+x.url+'" style="transform:rotate('+x.rot+'deg)"></div><span class="num">'+(i+1)+'</span><div class="actions"><button class="iconbtn rot" title="旋转">↻</button><button class="iconbtn del" title="删除">×</button></div><div class="photo-name">'+escapeHtml(x.file.name)+'</div><div style="display:flex;gap:5px"><button class="iconbtn left" title="前移">←</button><button class="iconbtn right" title="后移">→</button></div>';
+ d.querySelector('.rot').onclick=()=>{x.rot=(x.rot+90)%360;render()};d.querySelector('.del').onclick=()=>{URL.revokeObjectURL(x.url);files.splice(i,1);render()};
+ d.querySelector('.left').onclick=()=>move(i,i-1);d.querySelector('.right').onclick=()=>move(i,i+1);
+ d.ondragstart=()=>d.classList.add('dragging');d.ondragend=()=>d.classList.remove('dragging');cards.appendChild(d)});
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function move(a,b){if(b<0||b>=files.length)return;files.splice(b,0,files.splice(a,1)[0]);render()}
+cards.addEventListener('dragover',e=>{e.preventDefault();const dragged=cards.querySelector('.dragging');if(!dragged)return;const after=[...cards.querySelectorAll('.photo:not(.dragging)')].find(el=>e.clientY<=el.getBoundingClientRect().top+el.offsetHeight/2);after?cards.insertBefore(dragged,after):cards.appendChild(dragged)});
+cards.addEventListener('drop',()=>{const ids=[...cards.children].map(x=>x.dataset.id);files.sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id));render()});
+function loadImage(url){return new Promise((res,rej)=>{const im=new Image;im.onload=()=>res(im);im.onerror=rej;im.src=url})}
+function b64bytes(data){const b=atob(data.split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+async function prepare(x,q){
+ const im=await loadImage(x.url), swap=x.rot%180!==0, w=swap?im.naturalHeight:im.naturalWidth,h=swap?im.naturalWidth:im.naturalHeight;
+ const max=2600,scale=Math.min(1,max/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*scale));c.height=Math.max(1,Math.round(h*scale));
+ const g=c.getContext('2d',{alpha:false});g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.save();g.translate(c.width/2,c.height/2);g.rotate(x.rot*Math.PI/180);
+ const dw=(swap?c.height:c.width),dh=(swap?c.width:c.height);g.drawImage(im,-dw/2,-dh/2,dw,dh);g.restore();
+ return {jpg:b64bytes(c.toDataURL('image/jpeg',q)),w:c.width,h:c.height}
+}
+function makePdf(imgs,size,margin){
+ const chunks=[],offsets=[0];let pos=0,obj=0;const push=u=>{if(typeof u==='string')u=enc.encode(u);chunks.push(u);pos+=u.length};const add=(id,parts)=>{offsets[id]=pos;push(id+' 0 obj\n');parts.forEach(push);push('\nendobj\n')};
+ push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');const pageIds=imgs.map((_,i)=>3+i*3);add(1,['<< /Type /Catalog /Pages 2 0 R >>']);
+ add(2,['<< /Type /Pages /Count '+imgs.length+' /Kids ['+pageIds.map(i=>i+' 0 R').join(' ')+'] >>']);
+ imgs.forEach((im,i)=>{const page=3+i*3,img=page+1,content=page+2;let pw,ph;if(size==='a4p'){pw=595.28;ph=841.89}else if(size==='a4l'){pw=841.89;ph=595.28}else{pw=im.w*.75;ph=im.h*.75}
+ const m=Math.min(margin*2.83465,pw/3,ph/3),ratio=Math.min((pw-2*m)/im.w,(ph-2*m)/im.h),dw=im.w*ratio,dh=im.h*ratio,x=(pw-dw)/2,y=(ph-dh)/2;
+ const cmd='q '+dw.toFixed(2)+' 0 0 '+dh.toFixed(2)+' '+x.toFixed(2)+' '+y.toFixed(2)+' cm /Im'+i+' Do Q';
+ add(page,['<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+pw.toFixed(2)+' '+ph.toFixed(2)+'] /Resources << /XObject << /Im'+i+' '+img+' 0 R >> >> /Contents '+content+' 0 R >>']);
+ add(img,['<< /Type /XObject /Subtype /Image /Width '+im.w+' /Height '+im.h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+im.jpg.length+' >>\nstream\n',im.jpg,'\nendstream']);
+ add(content,['<< /Length '+enc.encode(cmd).length+' >>\nstream\n'+cmd+'\nendstream'])});
+ const xref=pos,total=2+imgs.length*3;push('xref\n0 '+(total+1)+'\n0000000000 65535 f \n');for(let i=1;i<=total;i++)push(String(offsets[i]).padStart(10,'0')+' 00000 n \n');
+ push('trailer\n<< /Size '+(total+1)+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF');
+ return new Blob(chunks,{type:'application/pdf'})
+}
+convert.onclick=async()=>{
+ if(!files.length)return;convert.disabled=true;convert.textContent='正在处理…';$('#progress').style.display='block';const bar=$('#bar'),out=[];
+ try{for(let i=0;i<files.length;i++){out.push(await prepare(files[i],+$('#quality').value/100));bar.style.width=((i+1)/files.length*78)+'%'}
+ const pdf=makePdf(out,$('#pageSize').value,+$('#margin').value);bar.style.width='100%';const a=document.createElement('a'),name=($('#filename').value.trim()||'图片合集').replace(/[\\/:*?"<>|]/g,'-');a.href=URL.createObjectURL(pdf);a.download=name+'.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);toast('PDF 已生成并开始下载')}
+ catch(e){console.error(e);toast('生成失败，请减少图片数量后重试')}
+ finally{setTimeout(()=>{$('#progress').style.display='none';bar.style.width='0'},800);convert.disabled=false;convert.textContent='生成并下载 PDF'}
+};
+</script>
+</body>
+</html>
