@@ -44,14 +44,14 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:35px}
 <div class="field"><label>页面尺寸</label><select id="pageSize"><option value="a4p">A4 纵向</option><option value="a4l">A4 横向</option><option value="original">跟随每张图片</option></select></div>
 <div class="field"><label>页边距 <span id="marginOut">10 mm</span></label><input id="margin" type="range" min="0" max="30" value="10"></div>
 <div class="field"><label>图片质量 <span id="qualityOut">高质量</span></label><input id="quality" type="range" min="55" max="95" value="85"></div>
-<label class="check"><input id="smartClean" type="checkbox" checked><span><b>智能清理</b><small>自动跳过纯黑页与高度重复的图片</small></span></label><button class="convert" id="convert" disabled>生成并下载 PDF</button>
+<label class="check"><input id="cropBlack" type="checkbox" checked><span><b>自动裁掉黑边</b><small>识别图片四周连续黑色区域，只保留有效内容</small></span></label><label class="check"><input id="smartClean" type="checkbox" checked><span><b>智能清理</b><small>自动跳过纯黑页与高度重复的图片</small></span></label><button class="convert" id="convert" disabled>生成并下载 PDF</button>
 <div class="progress" id="progress"><i id="bar"></i></div>
 <p class="mini">处理大批量高清图片时，请保持页面打开。生成的 PDF 会自动下载到设备。</p>
 </aside>
 </main>
 <section class="features">
 <article class="panel feature"><i>🔒</i><h3>真正的本地处理</h3><p>文件不会发送到服务器，适合证件、合同、实验记录等敏感图片。</p></article>
-<article class="panel feature"><i>↕</i><h3>顺序随手调整</h3><p>电脑拖动卡片排序；手机使用卡片底部的左右按钮调整顺序。</p></article>
+<article class="panel feature"><i>✂️</i><h3>自动裁黑边</h3><p>智能识别图片四周连续的黑色区域，自动裁剪后再生成 PDF。</p></article>
 <article class="panel feature"><i>⚡</i><h3>零安装即可使用</h3><p>不依赖后端和账号，打开网页就能用，生成完成后直接下载。</p></article>
 </section>
 <footer>YanQing Tools · 免费使用 · 不保存任何文件</footer>
@@ -85,12 +85,23 @@ cards.addEventListener('dragover',e=>{e.preventDefault();const dragged=cards.que
 cards.addEventListener('drop',()=>{const ids=[...cards.children].map(x=>x.dataset.id);files.sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id));render()});
 function loadImage(url){return new Promise((res,rej)=>{const im=new Image;im.onload=()=>res(im);im.onerror=rej;im.src=url})}
 function b64bytes(data){const b=atob(data.split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+function detectBlackCrop(im){
+ const maxSample=700,scale=Math.min(1,maxSample/Math.max(im.naturalWidth,im.naturalHeight)),sw=Math.max(1,Math.round(im.naturalWidth*scale)),sh=Math.max(1,Math.round(im.naturalHeight*scale));
+ const c=document.createElement('canvas');c.width=sw;c.height=sh;const g=c.getContext('2d');g.drawImage(im,0,0,sw,sh);const d=g.getImageData(0,0,sw,sh).data;
+ const dark=(x,y)=>{const i=(y*sw+x)*4;return .299*d[i]+.587*d[i+1]+.114*d[i+2]<42};
+ const rowBlack=y=>{let n=0,step=Math.max(1,Math.floor(sw/300));for(let x=0;x<sw;x+=step)if(dark(x,y))n++;return n/Math.ceil(sw/step)>.82};
+ const colBlack=x=>{let n=0,step=Math.max(1,Math.floor(sh/300));for(let y=0;y<sh;y+=step)if(dark(x,y))n++;return n/Math.ceil(sh/step)>.82};
+ let top=0,bottom=sh-1,left=0,right=sw-1;while(top<sh*.45&&rowBlack(top))top++;while(bottom>sh*.55&&rowBlack(bottom))bottom--;while(left<sw*.45&&colBlack(left))left++;while(right>sw*.55&&colBlack(right))right--;
+ if(right-left<sw*.18||bottom-top<sh*.18)return {sx:0,sy:0,sw:im.naturalWidth,sh:im.naturalHeight,cropped:false};
+ const pad=2,sx=Math.max(0,Math.floor((left-pad)/scale)),sy=Math.max(0,Math.floor((top-pad)/scale)),ex=Math.min(im.naturalWidth,Math.ceil((right+pad+1)/scale)),ey=Math.min(im.naturalHeight,Math.ceil((bottom+pad+1)/scale));
+ return {sx,sy,sw:ex-sx,sh:ey-sy,cropped:sx>2||sy>2||ex<im.naturalWidth-2||ey<im.naturalHeight-2}
+}
 async function prepare(x,q){
- const im=await loadImage(x.url), swap=x.rot%180!==0, w=swap?im.naturalHeight:im.naturalWidth,h=swap?im.naturalWidth:im.naturalHeight;
+ const im=await loadImage(x.url),crop=$('#cropBlack').checked?detectBlackCrop(im):{sx:0,sy:0,sw:im.naturalWidth,sh:im.naturalHeight},swap=x.rot%180!==0,w=swap?crop.sh:crop.sw,h=swap?crop.sw:crop.sh;
  const max=2600,scale=Math.min(1,max/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*scale));c.height=Math.max(1,Math.round(h*scale));
  const g=c.getContext('2d',{alpha:false});g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.save();g.translate(c.width/2,c.height/2);g.rotate(x.rot*Math.PI/180);
- const dw=(swap?c.height:c.width),dh=(swap?c.width:c.height);g.drawImage(im,-dw/2,-dh/2,dw,dh);g.restore();
- return {jpg:b64bytes(c.toDataURL('image/jpeg',q)),w:c.width,h:c.height}
+ const dw=swap?c.height:c.width,dh=swap?c.width:c.height;g.drawImage(im,crop.sx,crop.sy,crop.sw,crop.sh,-dw/2,-dh/2,dw,dh);g.restore();
+ return {jpg:b64bytes(c.toDataURL('image/jpeg',q)),w:c.width,h:c.height,cropped:crop.cropped}
 }
 async function signature(x){
  const im=await loadImage(x.url),c=document.createElement('canvas');c.width=16;c.height=16;const g=c.getContext('2d');g.drawImage(im,0,0,16,16);const d=g.getImageData(0,0,16,16).data,v=[];let sum=0;for(let i=0;i<d.length;i+=4){const z=.299*d[i]+.587*d[i+1]+.114*d[i+2];v.push(z);sum+=z}const avg=sum/v.length;let variance=0;v.forEach(z=>variance+=(z-avg)*(z-avg));return {v,avg,std:Math.sqrt(variance/v.length)}
